@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'samsow/docker-webcalculator-App'
+        DOCKER_IMAGE = 'samsow/webcalculator'
         DOCKER_CREDENTIALS_ID = 'docker-hub-creds' //Jenkins credential ID
     }
 
