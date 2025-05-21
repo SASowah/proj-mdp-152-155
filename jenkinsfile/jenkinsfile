@@ -56,7 +56,7 @@ pipeline {
             cleanWs()
         }
         success {
-            echo "Pipeline succeeded! App is running on port 8000
+            echo "Pipeline succeeded! App is running on port 8000"
 
         }
         failure {
