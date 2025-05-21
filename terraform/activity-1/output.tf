@@ -9,3 +9,8 @@ output "tomcat_server_ip" {
     description = "the public IP address of the tomcat server"
   
 }
+
+output "tomcat_server_url" {
+    value = "http://${aws_instance.tomcat_server.public_ip}:8080/*"
+    description = "the URL of the tomcat server"
+}
