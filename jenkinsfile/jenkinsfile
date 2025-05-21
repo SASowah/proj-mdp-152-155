@@ -24,7 +24,7 @@ pipeline {
         }
 
         // Stage 4: Push to Docker Hub
-        stage('Docker Push') {
+        stage('Docker Push') {_
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {

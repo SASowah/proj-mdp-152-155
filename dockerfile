@@ -1,6 +1,4 @@
 # Build a Java web application using Maven and deploy it to Tomcat
-# Multi-stage build to first compile the Java application with Maven
-# and then deploy the resulting WAR file to a Tomcat server.
 # The first stage uses the Maven image to build the application, and the second stage uses the Tomcat image to run it.
 FROM maven:3.9.5-eclipse-temurin-17 AS build
 # Set the working directory in the container
