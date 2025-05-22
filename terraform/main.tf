@@ -142,6 +142,7 @@ resource "aws_security_group" "k8s_sg" {
   
   # Install Ansible
   sudo yum install -y ansible
+  sudo yum install -y git
   
   # Verify installation (optional, logs to /var/log/user-data.log)
   ansible --version >> /var/log/user-data.log 2>&1
