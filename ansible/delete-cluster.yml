@@ -1,0 +1,23 @@
+---
+- name: Dlete k8s cluster
+  hosts: k8s_workstation
+  become: yes
+  vars:
+    cluster_name: "mycluster.k8s.local"
+    state_store: "k8s-kops-everything-state-chsufg1"
+
+  tasks:
+    - name: Delete Kubernetes cluster
+      command: >
+        kops delete cluster
+        --name {{ cluster_name }}
+        --state s3://{{ state_store }}
+        --yes
+      when: delete_cluster is defined and delete_cluster | bool
+      register: kops_delete_cluster
+      
+    - name: Output the result of the cluster deletion
+      debug:
+        var: kops_delete_cluster.stdout
+      when: delete_cluster is defined and delete_cluster | bool
+...
