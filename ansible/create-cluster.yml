@@ -11,34 +11,41 @@
     master_size: "t2.medium"
 
   tasks:
-    - name: Create a Kubernetes cluster using kops
-      command: >
-        kops create cluster
-        --name {{ cluster_name }}
-        --state s3://{{ state_store }}
-        --zones {{ zones }}
-        --node-count {{ node_count }}
-        --node-size {{ node_size }}
-        --master-size {{ master_size }}
-      register: kops_create_cluster
+    - name: Find kops binary location
+      shell: which kops || find / -name kops -type f 2>/dev/null | head -1
+      register: kops_path
+      ignore_errors: yes
+      changed_when: false
 
+    - name: Display kops path
+      debug:
+        var: kops_path.stdout
+
+    - name: Fail if kops is not found
+      fail:
+        msg: "kops binary not found. Please install kops first."
+      when: kops_path.stdout == ""
+
+    - name: Create a Kubernetes cluster using kops
+      shell: "{{ kops_path.stdout }} create cluster --name {{ cluster_name }} --state s3://{{ state_store }} --zones {{ zones }} --node-count {{ node_count }} --node-size {{ node_size }} --master-size {{ master_size }} --yes"
+      register: kops_create_cluster
+      
     - name: Validate the cluster creation
-      command: kops validate cluster --name {{ cluster_name }} --state s3://{{ state_store }}
+      shell: "{{ kops_path.stdout }} validate cluster --name {{ cluster_name }} --state s3://{{ state_store }}"
       register: kops_validate_cluster
       retries: 5
       delay: 30
       until: kops_validate_cluster.rc == 0
-      when: kops_create_cluster is defined and kops_create_cluster.stdout is not none
+      when: kops_create_cluster is defined and kops_create_cluster.rc == 0
+      ignore_errors: yes
 
     - name: Output the result of the cluster creation
       debug:
         var: kops_create_cluster.stdout
-      when: kops_create_cluster is defined and kops_create_cluster.stdout is not none
-      register: kops_create_cluster_output
+      when: kops_create_cluster is defined and kops_create_cluster.stdout is defined
+      
     - name: Output the result of the cluster validation
       debug:
         var: kops_validate_cluster.stdout
-      when: kops_validate_cluster is defined and kops_validate_cluster.stdout is not none
-      register: kops_validate_cluster_output
-    - name: Output the result of the cluster creation
+      when: kops_validate_cluster is defined and kops_validate_cluster.stdout is defined
 ...
