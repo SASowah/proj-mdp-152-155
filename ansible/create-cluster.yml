@@ -1,5 +1,5 @@
 ---
-- name: Create kubernetes cluster
+- name: Create Kubernetes cluster
   hosts: k8s_workstation
   become: yes
   vars:
@@ -11,7 +11,7 @@
     master_size: "t2.medium"
 
   tasks:
-    - name: Create a Kubernetes cluster using kops
+    - name: Create the cluster using Kops
       command: >
         /usr/local/bin/kops create cluster
         --name {{ cluster_name }}
@@ -19,19 +19,23 @@
         --zones {{ zones }}
         --node-count {{ node_count }}
         --node-size {{ node_size }}
-        --control_plane_size {{ master_size }}
+        --master-size {{ master_size }}
       register: kops_create_cluster
       failed_when: "'already exists' not in kops_create_cluster.stderr and kops_create_cluster.rc != 0"
-      changed_when: "'already exists' not in kops_create_cluster.stderr"    
+      changed_when: "'already exists' not in kops_create_cluster.stderr"
 
-    - name: Update and apply the Kubernetes cluster configuration
+    - name: Update and apply the cluster configuration
       command: >
         /usr/local/bin/kops update cluster
         --name {{ cluster_name }}
         --state s3://{{ state_store }}
         --yes
-        
-    - name: Validate the cluster creation
+
+    - name: Wait for cluster resources to settle
+      pause:
+        minutes: 2
+
+    - name: Validate the Kubernetes cluster
       command: >
         /usr/local/bin/kops validate cluster
         --name {{ cluster_name }}
@@ -40,8 +44,8 @@
       retries: 5
       delay: 60
       until: kops_validate_cluster.rc == 0
-      
-    - name: Output the result of the cluster creation
+
+    - name: Show validation output
       debug:
-        var: kops_validate_cluster.stdout
+        var: kops_validate_cluster.stdout_lines
 ...
