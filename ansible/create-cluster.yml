@@ -10,6 +10,13 @@
     node_size: "t2.medium"
     master_size: "t2.medium"
 
+- name: Debug — Check if kops exists
+  shell: which kops
+  register: kops_check
+
+- debug:
+    var: kops_check.stdout
+
   tasks:
     - name: Create the cluster using Kops
       command: >
