@@ -11,16 +11,18 @@
     master_size: "t2.medium"
 
   tasks:
-    - name: Debug — Check if kops exists
-      shell: which kops
+    - name: Debug — Check if kops binary exists in /usr/local/bin
+      shell: ls -l /usr/local/bin/kops
       register: kops_check
+      ignore_errors: true
 
-    - debug:
-        var: kops_check.stdout
+    - name: Show result of kops binary check
+      debug:
+        var: kops_check.stdout_lines
 
-    - name: Create the cluster using Kops
+    - name: Create the Kubernetes cluster using kops
       shell: |
-        kops create cluster \
+        /usr/local/bin/kops create cluster \
           --name {{ cluster_name }} \
           --state s3://{{ state_store }} \
           --zones {{ zones }} \
@@ -33,22 +35,22 @@
       failed_when: "'already exists' not in kops_create_cluster.stderr and kops_create_cluster.rc != 0"
       changed_when: "'already exists' not in kops_create_cluster.stderr"
 
-    - name: Update and apply the cluster configuration
+    - name: Apply the cluster configuration with kops update
       shell: |
-        kops update cluster \
+        /usr/local/bin/kops update cluster \
           --name {{ cluster_name }} \
           --state s3://{{ state_store }} \
           --yes
       args:
         executable: /bin/bash
 
-    - name: Wait for cluster resources to settle
+    - name: Wait for resources to stabilize
       pause:
         minutes: 2
 
     - name: Validate the Kubernetes cluster
       shell: |
-        kops validate cluster \
+        /usr/local/bin/kops validate cluster \
           --name {{ cluster_name }} \
           --state s3://{{ state_store }}
       register: kops_validate_cluster
