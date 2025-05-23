@@ -11,48 +11,37 @@
     master_size: "t2.medium"
 
   tasks:
-    - name: Install curl if not present
-      package:
-        name: curl
-        state: present
-
-    - name: Download kops
-      get_url:
-        url: https://github.com/kubernetes/kops/releases/latest/download/kops-linux-amd64
-        dest: /usr/local/bin/kops
-        mode: '0755'
-        force: yes
-      register: kops_download
-
-    - name: Verify kops installation
-      command: /usr/local/bin/kops version
-      register: kops_version
-      changed_when: false
-
-    - name: Display kops version
-      debug:
-        var: kops_version.stdout
-
     - name: Create a Kubernetes cluster using kops
-      shell: /usr/local/bin/kops create cluster --name {{ cluster_name }} --state s3://{{ state_store }} --zones {{ zones }} --node-count {{ node_count }} --node-size {{ node_size }} --master-size {{ master_size }} --yes
+      command: >
+        /usr/local/bin/kops create cluster
+        --name {{ cluster_name }}
+        --state s3://{{ state_store }}
+        --zones {{ zones }}
+        --node-count {{ node_count }}
+        --node-size {{ node_size }}
+        --control_plane_size {{ master_size }}
       register: kops_create_cluster
-      
+      failed_when: "'already exists' not in kops_create_cluster.stderr and kops_create_cluster.rc != 0"
+      changed_when: "'already exists' not in kops_create_cluster.stderr"    
+
+    - name: Update and apply the Kubernetes cluster configuration
+      command: >
+        /usr/local/bin/kops update cluster
+        --name {{ cluster_name }}
+        --state s3://{{ state_store }}
+        --yes
+        
     - name: Validate the cluster creation
-      shell: /usr/local/bin/kops validate cluster --name {{ cluster_name }} --state s3://{{ state_store }}
+      command: >
+        /usr/local/bin/kops validate cluster
+        --name {{ cluster_name }}
+        --state s3://{{ state_store }}
       register: kops_validate_cluster
       retries: 5
-      delay: 30
+      delay: 60
       until: kops_validate_cluster.rc == 0
-      when: kops_create_cluster is defined and kops_create_cluster.rc == 0
-      ignore_errors: yes
-
+      
     - name: Output the result of the cluster creation
       debug:
-        var: kops_create_cluster.stdout
-      when: kops_create_cluster is defined and kops_create_cluster.stdout is defined
-      
-    - name: Output the result of the cluster validation
-      debug:
         var: kops_validate_cluster.stdout
-      when: kops_validate_cluster is defined and kops_validate_cluster.stdout is defined
 ...
