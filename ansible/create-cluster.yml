@@ -10,49 +10,54 @@
     node_size: "t2.medium"
     master_size: "t2.medium"
 
-- name: Debug — Check if kops exists
-  shell: which kops
-  register: kops_check
-
-- debug:
-    var: kops_check.stdout
-
   tasks:
+    - name: Debug — Check if kops exists
+      shell: which kops
+      register: kops_check
+
+    - debug:
+        var: kops_check.stdout
+
     - name: Create the cluster using Kops
-      command: >
-        /usr/local/bin/kops create cluster
-        --name {{ cluster_name }}
-        --state s3://{{ state_store }}
-        --zones {{ zones }}
-        --node-count {{ node_count }}
-        --node-size {{ node_size }}
-        --master-size {{ master_size }}
+      shell: |
+        kops create cluster \
+          --name {{ cluster_name }} \
+          --state s3://{{ state_store }} \
+          --zones {{ zones }} \
+          --node-count {{ node_count }} \
+          --node-size {{ node_size }} \
+          --master-size {{ master_size }}
       register: kops_create_cluster
+      args:
+        executable: /bin/bash
       failed_when: "'already exists' not in kops_create_cluster.stderr and kops_create_cluster.rc != 0"
       changed_when: "'already exists' not in kops_create_cluster.stderr"
 
     - name: Update and apply the cluster configuration
-      command: >
-        /usr/local/bin/kops update cluster
-        --name {{ cluster_name }}
-        --state s3://{{ state_store }}
-        --yes
+      shell: |
+        kops update cluster \
+          --name {{ cluster_name }} \
+          --state s3://{{ state_store }} \
+          --yes
+      args:
+        executable: /bin/bash
 
     - name: Wait for cluster resources to settle
       pause:
         minutes: 2
 
     - name: Validate the Kubernetes cluster
-      command: >
-        /usr/local/bin/kops validate cluster
-        --name {{ cluster_name }}
-        --state s3://{{ state_store }}
+      shell: |
+        kops validate cluster \
+          --name {{ cluster_name }} \
+          --state s3://{{ state_store }}
       register: kops_validate_cluster
       retries: 5
       delay: 60
       until: kops_validate_cluster.rc == 0
+      args:
+        executable: /bin/bash
 
     - name: Show validation output
       debug:
         var: kops_validate_cluster.stdout_lines
-...
