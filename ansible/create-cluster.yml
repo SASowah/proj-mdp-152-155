@@ -11,27 +11,34 @@
     master_size: "t2.medium"
 
   tasks:
-    - name: Find kops binary location
-      shell: which kops || find / -name kops -type f 2>/dev/null | head -1
-      register: kops_path
-      ignore_errors: yes
+    - name: Install curl if not present
+      package:
+        name: curl
+        state: present
+
+    - name: Download kops
+      get_url:
+        url: https://github.com/kubernetes/kops/releases/latest/download/kops-linux-amd64
+        dest: /usr/local/bin/kops
+        mode: '0755'
+        force: yes
+      register: kops_download
+
+    - name: Verify kops installation
+      command: /usr/local/bin/kops version
+      register: kops_version
       changed_when: false
 
-    - name: Display kops path
+    - name: Display kops version
       debug:
-        var: kops_path.stdout
-
-    - name: Fail if kops is not found
-      fail:
-        msg: "kops binary not found. Please install kops first."
-      when: kops_path.stdout == ""
+        var: kops_version.stdout
 
     - name: Create a Kubernetes cluster using kops
-      shell: "{{ kops_path.stdout }} create cluster --name {{ cluster_name }} --state s3://{{ state_store }} --zones {{ zones }} --node-count {{ node_count }} --node-size {{ node_size }} --master-size {{ master_size }} --yes"
+      shell: /usr/local/bin/kops create cluster --name {{ cluster_name }} --state s3://{{ state_store }} --zones {{ zones }} --node-count {{ node_count }} --node-size {{ node_size }} --master-size {{ master_size }} --yes
       register: kops_create_cluster
       
     - name: Validate the cluster creation
-      shell: "{{ kops_path.stdout }} validate cluster --name {{ cluster_name }} --state s3://{{ state_store }}"
+      shell: /usr/local/bin/kops validate cluster --name {{ cluster_name }} --state s3://{{ state_store }}
       register: kops_validate_cluster
       retries: 5
       delay: 30
