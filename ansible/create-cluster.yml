@@ -28,7 +28,7 @@
           --zones {{ zones }} \
           --node-count {{ node_count }} \
           --node-size {{ node_size }} \
-          --master-size {{ master_size }}
+          --control-plane-size {{ master_size }}
       register: kops_create_cluster
       args:
         executable: /bin/bash
