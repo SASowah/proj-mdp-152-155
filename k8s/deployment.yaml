@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webcalc-deployment
+  labels:
+    app: webcalc
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: webcalc
+  template:
+    metadata:
+      labels:
+        app: webcalc
+    spec:
+      containers:
+        - name: webcalc
+          image: samsow/webcalculator:latest
+          ports:
+            - containerPort: 80
+          
