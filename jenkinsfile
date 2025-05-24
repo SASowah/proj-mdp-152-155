@@ -1,0 +1,58 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = 'samsow/webcalculator'
+        DOCKER_CREDENTIALS_ID = 'docker-hub-creds'
+        KUBECONFIG = '/home/ec2-user/.kube/config' // Adjust path if needed
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'project-3', url: 'https://github.com/SASowah/proj-mdp-152-155.git'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                script {
+                    sh """
+                        docker build -t ${DOCKER_IMAGE}:${env.BUILD_NUMBER} -t ${DOCKER_IMAGE}:latest .
+                    """
+                }
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+                        docker.image("${DOCKER_IMAGE}:${env.BUILD_NUMBER}").push()
+                        docker.image("${DOCKER_IMAGE}:latest").push()
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    sh """
+                        kubectl apply -f k8s/k8s-deployment.yml
+                        kubectl apply -f k8s/k8s-service.yml
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Deployment to Kubernetes successful!"
+        }
+        failure {
+            echo "❌ Deployment failed. Check logs."
+        }
+    }
+}
