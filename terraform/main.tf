@@ -143,6 +143,11 @@ resource "aws_security_group" "k8s_sg" {
   # Install Ansible
   sudo yum install -y ansible
   sudo yum install -y git
+
+  cd /home/ec2-user
+  # Clone the project repository and checkout the specific branch
+  sudo git clone https://github.com/SASowah/proj-mdp-152-155.git
+  cd /home/ec2-user/proj-mdp-152-155
   
   # Verify installation (optional, logs to /var/log/user-data.log)
   ansible --version >> /var/log/user-data.log 2>&1

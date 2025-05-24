@@ -1,5 +1,5 @@
 ---
-- name: Dlete k8s cluster
+- name: Delete Kubernetes cluster using Kops
   hosts: k8s_workstation
   become: yes
   vars:
@@ -7,17 +7,20 @@
     state_store: "k8s-kops-everything-state-chsufg1"
 
   tasks:
-    - name: Delete Kubernetes cluster
+    - name: Ensure Kops is installed
+      command: which kops
+      register: kops_path
+      failed_when: kops_path.rc != 0
+      changed_when: false
+
+    - name: Delete cluster with Kops
       command: >
-        kops delete cluster
+        /usr/local/bin/kops delete cluster
         --name {{ cluster_name }}
         --state s3://{{ state_store }}
         --yes
-      when: delete_cluster is defined and delete_cluster | bool
       register: kops_delete_cluster
-      
-    - name: Output the result of the cluster deletion
+
+    - name: Show cluster deletion output
       debug:
         var: kops_delete_cluster.stdout
-      when: delete_cluster is defined and delete_cluster | bool
-...
