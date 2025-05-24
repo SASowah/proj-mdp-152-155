@@ -33,4 +33,3 @@
         dest: /usr/local/bin/kops
         mode: '0755'
         force: yes
-...

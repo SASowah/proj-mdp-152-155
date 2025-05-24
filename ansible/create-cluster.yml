@@ -1,4 +1,3 @@
----
 - name: Create Kubernetes cluster
   hosts: k8s_workstation
   become: yes
@@ -71,5 +70,3 @@
       debug:
         var: kops_validate_cluster.stdout
       when: kops_validate_cluster is defined and kops_validate_cluster.stdout is not none
-      register: kops_validate_cluster_output
-...
