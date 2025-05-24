@@ -22,15 +22,3 @@ output "kops_state_store_bucket_name" {
   value       = aws_s3_bucket.k8s_bucket.bucket
   description = "Name of the S3 bucket used as the KOPS state store"
 }
-
-output "k8s_workstation_private_ips" {
-  value       = aws_instance.k8s_workstation.private_ip
-  description = "Private IP addresses of the Kubernetes workstation node"
-  
-}
-
-output "ansible_master_public_ips" {
-  value       = aws_instance.ansible_master.public_ip
-  description = "Public IP addresses of the Ansible master node"
-  
-}
