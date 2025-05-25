@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
+        DOCKER_CREDENTIALS_ID = 'docker-hub-creds'
         IMAGE_NAME = 'samsow/webcalculator'
-        IMAGE_TAG = 'latest'
-        DOCKER_CREDENTIALS_ID = 'docker-hub-creds' 
+        IMAGE_TAG = 'latest' 
         KUBECONFIG = '/var/lib/jenkins/.kube/config'
     }
 
