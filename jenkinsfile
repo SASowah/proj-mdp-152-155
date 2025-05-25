@@ -9,33 +9,33 @@ pipeline {
     }
 
     stages {
-
         stage('Checkout Code') {
             steps {
                 git branch: 'project-3', url: 'https://github.com/SASowah/proj-mdp-152-155.git'
             }
         }
-        }
+        
         // Stage 3: Build Docker Image
         stage('Docker Build') {
             steps {
                 script {
-                    sh "docker build -t ${DOCKER_IMAGE}:${env.BUILD_NUMBER} -t ${DOCKER_IMAGE}:latest ."
+                    sh "docker build -t ${IMAGE_NAME}:${env.BUILD_NUMBER} -t ${IMAGE_NAME}:latest ."
                 }
             }
         }
 
         // Stage 4: Push to Docker Hub
-        stage('Docker Push') {_
+        stage('Docker Push') {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                        docker.image("${DOCKER_IMAGE}:${env.BUILD_NUMBER}").push()
-                        docker.image("${DOCKER_IMAGE}:latest").push()
+                        docker.image("${IMAGE_NAME}:${env.BUILD_NUMBER}").push()
+                        docker.image("${IMAGE_NAME}:latest").push()
                     }
                 }
             }
         }
+        
         stage('Deploy to Kubernetes') {
             steps {
                 script {
@@ -56,3 +56,4 @@ pipeline {
             }
         }
     }
+}
