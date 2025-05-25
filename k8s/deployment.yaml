@@ -19,4 +19,3 @@ spec:
           image: samsow/webcalculator:latest
           ports:
             - containerPort: 80
-          
