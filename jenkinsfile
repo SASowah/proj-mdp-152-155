@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = 'samsow/webcalculator'
         IMAGE_TAG = 'latest'
-        KUBECONFIG = '/home/ec2-user/.kube/config'
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
     }
 
     stages {
