@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'samsow/webcalculator'
-        DOCKER_CREDENTIALS_ID = 'docker-hub-creds' //Jenkins credential ID
+        DOCKER_CREDENTIALS_ID = 'docker-hub-creds' 
     }
 
     stages {
